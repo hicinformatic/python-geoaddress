@@ -1,0 +1,9 @@
+# Development dependencies
+# Install with: pip install -r requirements-dev.txt
+
+# Testing
+pytest>=8.3
+ruff>=0.5
+mypy>=1.0
+
+
