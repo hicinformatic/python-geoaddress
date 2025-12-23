@@ -41,12 +41,12 @@ test = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 exclude = ["tests*", "docs*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["."]
+pythonpath = ["src"]
 addopts = "-ra --strict-markers"
 markers = [
   "slow: marks tests as slow (deselect with '-m \"not slow\"')",
