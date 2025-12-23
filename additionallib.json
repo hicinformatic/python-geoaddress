@@ -1,0 +1,15 @@
+{
+  "libraries": [
+    {
+      "name": "python-qualitybase",
+      "path": "../python-qualitybase",
+      "description": "Quality base library"
+    },
+    {
+      "name": "python-providerkit",
+      "path": "../python-providerkit",
+      "description": "Provider kit library"
+    }
+  ]
+}
+

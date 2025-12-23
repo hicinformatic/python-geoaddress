@@ -1,75 +1,247 @@
 # python-geoaddress
 
-Address verification and geocoding backends library.
-
-## Features
-
-- 📍 Structured Address dataclass with geocoding support
-- 🗺️ 10+ geocoding backends (Nominatim, Google Maps, Mapbox, HERE, etc.)
-- ✅ Address validation and normalization
-- 🌍 International address support
-- 🔌 Pluggable backend system
+Geoaddress is a Python library for address geocoding and reverse geocoding. It provides a unified interface to multiple geocoding providers (Nominatim, Google Maps, Mapbox, etc.) using ProviderKit for provider management.
 
 ## Installation
 
 ```bash
-pip install python-geoaddress
+pip install geoaddress
 ```
 
-## Quick Start
+For development:
+
+```bash
+pip install -e .
+pip install -e ".[dev,lint,quality,security,test]"
+```
+
+## Usage
+
+Geoaddress provides a unified interface to multiple geocoding providers through ProviderKit.
+
+### Basic Usage
+
+#### Search Addresses
 
 ```python
-from geoaddress import Address, NominatimAddressBackend
+from geoaddress import search_addresses
 
-# Create address backend
-backend = NominatimAddressBackend(config={
-    "user_agent": "my-app/1.0"
-})
+# Search for addresses using available providers
+results = search_addresses("1600 Amphitheatre Parkway, Mountain View, CA")
 
-# Geocode an address
-result = backend.geocode("1600 Amphitheatre Parkway, Mountain View, CA")
-print(f"Coordinates: {result['latitude']}, {result['longitude']}")
+# Results include addresses from all available providers
+for result in results:
+    print(f"{result['text']} - {result['latitude']}, {result['longitude']}")
+```
 
-# Create Address object
-address = Address(
-    line1="123 Main St",
-    city="Paris",
-    postal_code="75001",
-    country="France"
+#### Reverse Geocoding
+
+```python
+from geoaddress import reverse_geocode
+
+# Convert coordinates to address
+address = reverse_geocode(37.4224764, -122.0842499)
+
+print(f"Address: {address['text']}")
+print(f"City: {address['city']}")
+print(f"Country: {address['country']}")
+```
+
+#### Get Address by Reference
+
+```python
+from geoaddress import get_address_by_reference
+
+# Get address by provider-specific reference ID
+address = get_address_by_reference("ChIJN1t_tDeuEmsRUsoyG83frY4", query_string="google_maps")
+```
+
+#### Get Address by OpenStreetMap ID
+
+```python
+from geoaddress import get_address_by_osm
+
+# Get address by OpenStreetMap ID
+address = get_address_by_osm("123456789", "way")
+```
+
+### Provider Selection
+
+You can specify which providers to use:
+
+```python
+from geoaddress import search_addresses
+
+# Use only Nominatim provider
+results = search_addresses(
+    "Paris, France",
+    query_string="nominatim"
+)
+
+# Use multiple specific providers
+results = search_addresses(
+    "Paris, France",
+    query_string="nominatim|photon"
 )
 ```
 
-## Available Backends
+### Provider Configuration
 
-- **NominatimAddressBackend** - OpenStreetMap (FREE)
-- **GoogleMapsAddressBackend** - Google Maps Geocoding
-- **MapboxAddressBackend** - Mapbox Geocoding
-- **HereAddressBackend** - HERE Location Services
-- **LocationIQAddressBackend** - LocationIQ
-- **OpenCageAddressBackend** - OpenCage Geocoder
-- **PhotonAddressBackend** - Photon (Komoot)
-- **GeocodeEarthAddressBackend** - Geocode Earth
-- **GeoapifyAddressBackend** - Geoapify
-- **MapsCoAddressBackend** - Maps.co
+Providers can be configured via environment variables or configuration files:
+
+```python
+# Environment variables (provider-specific prefixes)
+# NOMINATIM_USER_AGENT=my-app/1.0
+# GOOGLE_MAPS_API_KEY=your-api-key
+# MAPBOX_ACCESS_TOKEN=your-token
+
+from geoaddress import search_addresses
+
+# Providers automatically use environment variables
+results = search_addresses("Paris, France")
+```
+
+### Loading Providers from Configuration
+
+```python
+from geoaddress import get_address_providers, search_addresses
+
+# Load providers from JSON configuration
+providers = get_address_providers(json="providers.json")
+
+# Use specific providers
+results = search_addresses("Paris, France", providers=providers)
+```
+
+## Supported Providers
+
+### Free Providers (no API key required)
+
+- **Nominatim**: OpenStreetMap-based geocoding
+- **Photon**: Komoot's OpenStreetMap geocoding service
+
+### Paid/API key Providers
+
+- **Google Maps**: Google's geocoding API
+- **Mapbox**: Mapbox Geocoding API
+- **LocationIQ**: LocationIQ Geocoding API
+- **OpenCage**: OpenCage Geocoding API
+- **Geocode Earth**: Geocode Earth API
+- **Geoapify**: Geoapify Geocoding API
+- **Maps.co**: Maps.co Geocoding API
+- **HERE**: HERE Geocoding API
+
+## Address Format
+
+All providers return addresses in a standardized format:
+
+```python
+{
+    "text": "Full formatted address string",
+    "reference": "Backend reference ID (place ID)",
+    "address_line1": "Street number and name",
+    "address_line2": "Building, apartment, floor (optional)",
+    "city": "City name",
+    "postal_code": "Postal/ZIP code",
+    "state": "State/region/province",
+    "country": "Country name",
+    "country_code": "ISO country code (e.g., FR, US, GB)",
+    "latitude": 48.8566,
+    "longitude": 2.3522,
+    "confidence": 95.0,
+    "relevance": 100.0,
+    "backend": "Nominatim",
+    "backend_name": "nominatim",
+    "geoaddress_id": "nominatim-123456"
+}
+```
+
+## CLI Usage
+
+Geoaddress includes a CLI for command-line usage:
+
+```bash
+# Search addresses
+geoaddress address --query "Paris, France"
+
+# Reverse geocoding
+geoaddress reverse --lat 48.8566 --lon 2.3522
+
+# Use specific provider
+geoaddress address --query "Paris, France" --backend nominatim
+
+# Get address by reference
+geoaddress reference --ref "ChIJN1t_tDeuEmsRUsoyG83frY4" --backend google_maps
+```
+
+## Architecture
+
+Geoaddress uses a provider-based architecture built on ProviderKit:
+
+- Each geocoding service is implemented as a provider inheriting from `GeoaddressProvider`
+- `GeoaddressProvider` extends `ProviderBase` from ProviderKit
+- Providers are organized in the `providers/` directory
+- Common functionality is shared through the base `GeoaddressProvider` class
+- Provider discovery and management is handled by ProviderKit
+
+## Environment Variables
+
+### `ENVFILE_PATH`
+
+The `ENVFILE_PATH` environment variable allows you to automatically specify the path to a `.env` file to load when starting services.
+
+**Usage:**
+
+```bash
+ENVFILE_PATH=.env.local ./service.py dev install-dev
+```
+
+### `ENSURE_VIRTUALENV`
+
+The `ENSURE_VIRTUALENV` environment variable allows you to automatically activate the `.venv` virtual environment if it exists.
+
+**Usage:**
+
+```bash
+ENSURE_VIRTUALENV=1 ./service.py quality lint
+```
+
+### Provider-Specific Variables
+
+Each provider uses environment variables with specific prefixes:
+
+- `NOMINATIM_USER_AGENT`: User agent for Nominatim requests
+- `GOOGLE_MAPS_API_KEY`: Google Maps API key
+- `MAPBOX_ACCESS_TOKEN`: Mapbox access token
+- `LOCATIONIQ_API_KEY`: LocationIQ API key
+- `OPENCAGE_API_KEY`: OpenCage API key
+- And more...
+
+## Use Cases
+
+- Address search and autocomplete
+- Geocoding addresses to coordinates
+- Reverse geocoding coordinates to addresses
+- Address validation and normalization
+- Multi-provider address lookup with fallback
+- Address data standardization across different geocoding services
+- Integration with mapping and location-based applications
 
 ## Development
 
-```bash
-# Setup
-python dev.py venv
-python dev.py install-dev
+Geoaddress uses qualitybase for development tooling:
 
-# Tests
-python dev.py test
+```bash
+# Quality checks
+./service.py quality lint
+./service.py quality security
+./service.py quality all
+
+# Development tools
+./service.py dev venv
+./service.py dev install-dev
+./service.py dev clean
 ```
 
-## Used by
-
-- **djgeoaddress** (django-geoaddress) - Django integration
-- **pymissive** (python-missive) - Imports Address and backends from geoaddress (optional)
-
-## License
-
-MIT
-
+See `docs/` for project rules and guidelines.
 

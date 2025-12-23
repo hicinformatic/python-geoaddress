@@ -30,5 +30,6 @@ htmlcov/
 
 # Environment
 .env
+.geoaddress.json
 
 
