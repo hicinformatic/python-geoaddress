@@ -3,7 +3,6 @@ from __future__ import annotations
 import time
 from typing import Any
 
-import requests  # type: ignore[import-untyped]
 
 from . import GeoaddressProvider
 
@@ -17,7 +16,6 @@ class MapsCoProvider(GeoaddressProvider):
     site_url = "https://geocode.maps.co"
     config_keys = ["MAPS_CO_API_KEY", "MAPS_CO_BASE_URL"]
     config_defaults = {
-        "MAPS_CO_API_KEY": None,
         "MAPS_CO_BASE_URL": "https://geocode.maps.co",
     }
     config_required = ["MAPS_CO_API_KEY"]

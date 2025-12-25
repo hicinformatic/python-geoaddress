@@ -16,6 +16,9 @@ dependencies = [
     "providerkit",
 ]
 
+[project.scripts]
+geoaddress = "geoaddress.cli:main"
+
 [project.optional-dependencies]
 lint = [
   "ruff>=0.5.0",

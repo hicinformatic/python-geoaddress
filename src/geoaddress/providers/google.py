@@ -3,7 +3,6 @@ from __future__ import annotations
 import time
 from typing import Any
 
-import requests  # type: ignore[import-untyped]
 
 from . import GeoaddressProvider
 
@@ -16,9 +15,6 @@ class GoogleMapsProvider(GeoaddressProvider):
     documentation_url = "https://developers.google.com/maps/documentation/geocoding"
     site_url = "https://developers.google.com/maps"
     config_keys = ["GOOGLE_MAPS_API_KEY"]
-    config_defaults = {
-        "GOOGLE_MAPS_API_KEY": None,
-    }
     config_required = ["GOOGLE_MAPS_API_KEY"]
 
     def __init__(self, **kwargs: str | None) -> None:

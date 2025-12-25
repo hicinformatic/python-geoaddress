@@ -3,7 +3,6 @@ from __future__ import annotations
 import time
 from typing import Any
 
-import requests  # type: ignore[import-untyped]
 
 from . import GeoaddressProvider
 
@@ -17,7 +16,6 @@ class OpencageProvider(GeoaddressProvider):
     site_url = "https://opencagedata.com"
     config_keys = ["OPENCAGE_API_KEY", "OPENCAGE_BASE_URL"]
     config_defaults = {
-        "OPENCAGE_API_KEY": None,
         "OPENCAGE_BASE_URL": "https://api.opencagedata.com/geocode/v1",
     }
     config_required = ["OPENCAGE_API_KEY"]

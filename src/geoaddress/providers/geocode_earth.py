@@ -3,7 +3,6 @@ from __future__ import annotations
 import time
 from typing import Any
 
-import requests  # type: ignore[import-untyped]
 
 from . import GeoaddressProvider
 
@@ -17,7 +16,6 @@ class GeocodeEarthProvider(GeoaddressProvider):
     site_url = "https://geocode.earth"
     config_keys = ["GEOCODE_EARTH_API_KEY", "GEOCODE_EARTH_BASE_URL"]
     config_defaults = {
-        "GEOCODE_EARTH_API_KEY": None,
         "GEOCODE_EARTH_BASE_URL": "https://api.geocode.earth/v1",
     }
     config_required = ["GEOCODE_EARTH_API_KEY"]

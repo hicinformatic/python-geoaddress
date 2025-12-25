@@ -3,8 +3,6 @@ from __future__ import annotations
 import time
 from typing import Any
 
-import requests  # type: ignore[import-untyped]
-
 from . import GeoaddressProvider
 
 
@@ -17,7 +15,6 @@ class GeoapifyProvider(GeoaddressProvider):
     site_url = "https://www.geoapify.com"
     config_keys = ["GEOAPIFY_API_KEY", "GEOAPIFY_BASE_URL"]
     config_defaults = {
-        "GEOAPIFY_API_KEY": None,
         "GEOAPIFY_BASE_URL": "https://api.geoapify.com/v1",
     }
     config_required = ["GEOAPIFY_API_KEY"]

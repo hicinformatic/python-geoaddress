@@ -3,7 +3,6 @@ from __future__ import annotations
 import time
 from typing import Any
 
-import requests  # type: ignore[import-untyped]
 
 from . import GeoaddressProvider
 
@@ -16,10 +15,6 @@ class HereProvider(GeoaddressProvider):
     documentation_url = "https://developer.here.com/documentation/geocoding-search-api"
     site_url = "https://developer.here.com"
     config_keys = ["HERE_APP_ID", "HERE_APP_CODE"]
-    config_defaults = {
-        "HERE_APP_ID": None,
-        "HERE_APP_CODE": None,
-    }
     config_required = ["HERE_APP_ID", "HERE_APP_CODE"]
 
     def __init__(self, **kwargs: str | None) -> None:

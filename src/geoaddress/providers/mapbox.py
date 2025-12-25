@@ -4,7 +4,6 @@ import time
 import urllib.parse
 from typing import Any
 
-import requests  # type: ignore[import-untyped]
 
 from . import GeoaddressProvider
 
@@ -17,9 +16,6 @@ class MapboxProvider(GeoaddressProvider):
     documentation_url = "https://docs.mapbox.com/api/search/geocoding/"
     site_url = "https://www.mapbox.com"
     config_keys = ["MAPBOX_ACCESS_TOKEN"]
-    config_defaults = {
-        "MAPBOX_ACCESS_TOKEN": None,
-    }
     config_required = ["MAPBOX_ACCESS_TOKEN"]
 
     def __init__(self, **kwargs: str | None) -> None:

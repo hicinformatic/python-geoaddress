@@ -13,10 +13,11 @@ def get_address_providers(
     base_module: str | None = None,
     query_string: str | None = None,
     search_fields: list[str] | None = None,
+    attribute_search: dict[str, str] | None = None,
     format: str | None = None,
 ) -> dict[str, Any] | str:
     """Get address providers."""
-    return get_providers(  # type: ignore[no-any-return]
+    providers = get_providers(  # type: ignore[no-any-return]
         json=json,
         lib_name=lib_name,
         config=config,
@@ -24,9 +25,27 @@ def get_address_providers(
         base_module=base_module,
         query_string=query_string,
         search_fields=search_fields,
+        attribute_search=attribute_search,
         format=format,
     )
+    if not len(providers):
+        raise ValueError("No providers found")
+    return providers
 
+
+def get_address_provider(
+    name: str,
+) -> Any:
+    """Get address provider."""
+    providers = get_providers(  # type: ignore[no-any-return]
+        lib_name="geoaddress",
+        attribute_search={"name": name},
+        format="python",
+    )
+    if len(providers) > 1:
+        raise ValueError(f"Expected 1 provider, got {len(providers)}")
+    return providers[0]
+    
 
 def search_addresses(
     query: str,

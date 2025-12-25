@@ -3,7 +3,6 @@ from __future__ import annotations
 import time
 from typing import Any
 
-import requests  # type: ignore[import-untyped]
 
 from . import GeoaddressProvider
 
@@ -17,7 +16,6 @@ class LocationIQProvider(GeoaddressProvider):
     site_url = "https://locationiq.com"
     config_keys = ["LOCATIONIQ_API_KEY", "LOCATIONIQ_BASE_URL"]
     config_defaults = {
-        "LOCATIONIQ_API_KEY": None,
         "LOCATIONIQ_BASE_URL": "https://api.locationiq.com/v1",
     }
     config_required = ["LOCATIONIQ_API_KEY"]
