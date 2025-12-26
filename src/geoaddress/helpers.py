@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any
 
-from providerkit.helpers import get_providers, try_providers
+from providerkit.helpers import get_providers, try_providers, try_providers_first
 
 
 def get_address_providers(
@@ -49,7 +49,7 @@ def get_address_provider(
 
 def search_addresses(
     query: str,
-    *,
+    first: bool = False,
     providers: dict[str, Any] | None = None,
     json: str | Path | None = None,
     lib_name: str = "geoaddress",
@@ -61,24 +61,30 @@ def search_addresses(
     **kwargs: Any,
 ) -> Any:
     """Search addresses using providers."""
-    return try_providers(
-        "search_addresses",
-        query,
-        providers=providers,
-        json=json,
-        lib_name=lib_name,
-        config=config,
-        dir_path=dir_path,
-        base_module=base_module,
-        query_string=query_string,
-        search_fields=search_fields,
-        **kwargs,
-    )
+    if "additional_args" not in kwargs:
+        kwargs["additional_args"] = {}
+    kwargs["additional_args"]["query"] = query
+
+    providers_args = {
+        "command": "search_addresses",
+        "json": json,
+        "lib_name": lib_name,
+        "config": config,
+        "dir_path": dir_path,
+        "base_module": base_module,
+        "query_string": query_string,
+        "search_fields": search_fields,
+    }
+    providers_args.update(kwargs)
+
+    if first:
+        return try_providers_first(**providers_args)
+    return try_providers(**providers_args)
 
 
 def get_address_by_reference(
     reference: str,
-    *,
+    first: bool = False,
     providers: dict[str, Any] | None = None,
     json: str | Path | None = None,
     lib_name: str = "geoaddress",
@@ -90,16 +96,21 @@ def get_address_by_reference(
     **kwargs: Any,
 ) -> Any:
     """Get address by reference using providers."""
-    return try_providers(
-        "get_address_by_reference",
-        reference,
-        providers=providers,
-        json=json,
-        lib_name=lib_name,
-        config=config,
-        dir_path=dir_path,
-        base_module=base_module,
-        query_string=query_string,
-        search_fields=search_fields,
-        **kwargs,
-    )
+    if "additional_args" not in kwargs:
+        kwargs["additional_args"] = {}
+    kwargs["additional_args"]["reference"] = reference
+    providers_args = {
+        "command": "get_address_by_reference",
+        "json": json,
+        "lib_name": lib_name,
+        "config": config,
+        "dir_path": dir_path,
+        "base_module": base_module,
+        "query_string": query_string,
+        "search_fields": search_fields,
+    }
+    providers_args.update(kwargs)
+
+    if first:
+        return try_providers_first(**providers_args)
+    return try_providers(**providers_args)

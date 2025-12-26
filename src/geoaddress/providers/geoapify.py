@@ -330,11 +330,3 @@ class GeoapifyProvider(GeoaddressProvider):
             if raw:
                 return {"error": str(e)}
             return None
-
-    def get_address_by_osm(self, _osm_keys_value: dict[str, Any], raw: bool = False) -> list[dict[str, Any]] | None:  # noqa: C901
-
-        """Get address by OSM key-value pairs or OSM ID using Geoapify."""
-        error_msg = "Geoapify does not support get_address_by_osm"
-        if raw:
-            return [{"error": error_msg}]
-        return []

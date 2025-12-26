@@ -227,23 +227,3 @@ class OpencageProvider(GeoaddressProvider):
             if raw:
                 return {"error": str(e)}
             return None
-
-    def get_address_by_reference(self, _reference: str, raw: bool = False) -> dict[str, Any] | None:  # noqa: C901
-
-        """Get address by reference using OpenCage.
-
-        Note: OpenCage does not support direct lookup by reference ID.
-        This method returns an error indicating the limitation.
-        """
-        error_msg = "OpenCage does not support direct lookup by reference ID. Use reverse_geocode with coordinates instead."
-        if raw:
-            return {"error": error_msg}
-        return None
-
-    def get_address_by_osm(self, _osm_keys_value: dict[str, Any], raw: bool = False) -> list[dict[str, Any]] | None:  # noqa: C901
-
-        """Get address by OSM key-value pairs or OSM ID using OpenCage."""
-        error_msg = "OpenCage does not support get_address_by_osm"
-        if raw:
-            return [{"error": error_msg}]
-        return []

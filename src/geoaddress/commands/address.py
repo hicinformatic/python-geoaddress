@@ -6,7 +6,7 @@ import sys
 from typing import TYPE_CHECKING, Any
 
 from providerkit.cli import _get_package_name  # noqa: TID252
-from providerkit.helpers import try_providers, try_providers_first  # noqa: TID252
+from geoaddress.helpers import search_addresses
 from qualitybase.commands.base import Command
 
 if TYPE_CHECKING:
@@ -80,7 +80,6 @@ def _address_command(args: list[str]) -> bool:  # noqa: C901
     providers_args: dict[str, Any] = {
         "format": output_format,
         "json": json_path,
-        "lib_name": lib_name,
         "dir_path": dir_path,
         "query_string": query_string,
     }
@@ -88,21 +87,11 @@ def _address_command(args: list[str]) -> bool:  # noqa: C901
     if attribute_search:
         providers_args["attribute_search"] = attribute_search
 
-    additional_args["query"] = query
     if raw:
         additional_args["raw"] = True
-    providers_args["additional_args"] = additional_args
 
-    if first:
-        result = try_providers_first(
-            command="search_addresses",
-            **providers_args,
-        )
-    else:
-        result = try_providers(
-            command="search_addresses",
-            **providers_args,
-        )
+
+    result = search_addresses(query=query, first=first, additional_args=additional_args, **providers_args)
 
     print(result)
     return True

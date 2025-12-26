@@ -198,18 +198,6 @@ class LocationIQProvider(GeoaddressProvider):
                 return {"error": str(e)}
             return None
 
-    def get_address_by_reference(self, _reference: str, raw: bool = False) -> dict[str, Any] | None:  # noqa: C901
-
-        """Get address by reference (place_id) using LocationIQ.
-
-        Note: LocationIQ does not support direct lookup by place_id.
-        This method returns an error indicating the limitation.
-        """
-        error_msg = "LocationIQ does not support direct lookup by reference ID. Use reverse_geocode with coordinates instead."
-        if raw:
-            return {"error": error_msg}
-        return None
-
     def get_address_by_osm(self, osm_keys_value: dict[str, Any], raw: bool = False) -> list[dict[str, Any]] | None:  # noqa: C901
 
         """Get address by OSM key-value pairs using LocationIQ."""

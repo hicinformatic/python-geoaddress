@@ -3,6 +3,8 @@ from __future__ import annotations
 import time
 from typing import Any
 
+import requests
+
 from . import GeoaddressProvider
 
 
@@ -199,13 +201,49 @@ class NominatimProvider(GeoaddressProvider):
             if raw:
                 return result
 
-            normalized = self._normalize_from_mapping(result, self._field_mapping)
+            addresstags = result.get("addresstags", {})
+            centroid = result.get("centroid", {})
+            geometry = result.get("geometry", {})
+
+            coordinates = centroid.get("coordinates") or geometry.get("coordinates")
+            lat = coordinates[1] if coordinates and len(coordinates) >= 2 else None
+            lon = coordinates[0] if coordinates and len(coordinates) >= 2 else None
+
+            transformed_result = {
+                "place_id": result.get("place_id"),
+                "osm_id": result.get("osm_id"),
+                "osm_type": result.get("osm_type"),
+                "lat": str(lat) if lat is not None else None,
+                "lon": str(lon) if lon is not None else None,
+                "type": result.get("type"),
+                "class": result.get("category"),
+                "address": {
+                    "house_number": addresstags.get("housenumber") or result.get("housenumber"),
+                    "road": addresstags.get("street"),
+                    "city": addresstags.get("city"),
+                    "town": addresstags.get("town"),
+                    "village": addresstags.get("village"),
+                    "postcode": addresstags.get("postcode") or result.get("calculated_postcode"),
+                    "state": addresstags.get("state"),
+                    "province": addresstags.get("province"),
+                    "country_code": result.get("country_code"),
+                    "country": addresstags.get("country"),
+                    "municipality": addresstags.get("municipality"),
+                    "region": addresstags.get("region"),
+                    "quarter": addresstags.get("quarter"),
+                    "neighbourhood": addresstags.get("neighbourhood"),
+                    "suburb": addresstags.get("suburb"),
+                },
+                "importance": result.get("calculated_importance") or result.get("importance"),
+            }
+
+            normalized = self._normalize_from_mapping(transformed_result, self._field_mapping)
             normalized["backend"] = self.display_name
             normalized["backend_name"] = self.name
             normalized["text"] = self._build_address_string(normalized)
             normalized["confidence"] = self._calculate_confidence(
                 normalized,
-                feature=result,
+                feature=transformed_result,
                 importance_key="importance",
             )
             normalized["geoaddress_id"] = self._generate_geoaddress_id(normalized)
