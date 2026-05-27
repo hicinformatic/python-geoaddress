@@ -7,13 +7,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  publish:
-    name: Publish ${{ matrix.package_name }}
+  build:
+    name: Build ${{ matrix.package_name }}
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
 
     strategy:
       fail-fast: false
@@ -22,18 +21,9 @@ jobs:
           - package_name: geoaddress
             working_directory: python-geoaddress
             packages_dir: python-geoaddress/dist/
-            install_dependencies: |
-              python -m pip install "clicommands @ git+https://github.com/SunnyBara/python-clicommands.git@3d8b78ba62d1ff3fff0803060a467d8f44cbc86a"
-              python -m pip install "providerkit @ git+https://github.com/SunnyBara/python-providerkit.git@601f27aaab01c8d9608551b38218861d917c19ee#subdirectory=python-providerkit"
           - package_name: django-geoaddress
             working_directory: django-geoaddress
             packages_dir: django-geoaddress/dist/
-            install_dependencies: |
-              python -m pip install "Django==5.2.*"
-              python -m pip install "clicommands @ git+https://github.com/SunnyBara/python-clicommands.git@3d8b78ba62d1ff3fff0803060a467d8f44cbc86a"
-              python -m pip install "providerkit @ git+https://github.com/SunnyBara/python-providerkit.git@601f27aaab01c8d9608551b38218861d917c19ee#subdirectory=python-providerkit"
-              python -m pip install "django-providerkit @ git+https://github.com/SunnyBara/python-providerkit.git@601f27aaab01c8d9608551b38218861d917c19ee#subdirectory=django-providerkit"
-              python -m pip install -e ../python-geoaddress
 
     steps:
       - name: Checkout repository
@@ -48,20 +38,75 @@ jobs:
         working-directory: ${{ matrix.working_directory }}
         run: |
           python -m pip install --upgrade pip
-          ${{ matrix.install_dependencies }}
+          if [ "${{ matrix.package_name }}" = "django-geoaddress" ]; then
+            python -m pip install "Django==5.2.*"
+            python -m pip install -e ../python-geoaddress
+          fi
           python -m pip install build twine
           python -m build
           python -m twine check dist/*
 
+      - name: Upload distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.package_name }}-distributions
+          path: ${{ matrix.packages_dir }}
+          if-no-files-found: error
+
+  publish:
+    name: Publish ${{ matrix.package_name }} to ${{ matrix.repository }}
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package_name: geoaddress
+            packages_dir: python-geoaddress/dist/
+            repository: testpypi
+            repository_url: https://test.pypi.org/legacy/
+          - package_name: geoaddress
+            packages_dir: python-geoaddress/dist/
+            repository: pypi
+            repository_url: ""
+          - package_name: django-geoaddress
+            packages_dir: django-geoaddress/dist/
+            repository: testpypi
+            repository_url: https://test.pypi.org/legacy/
+          - package_name: django-geoaddress
+            packages_dir: django-geoaddress/dist/
+            repository: pypi
+            repository_url: ""
+
+    steps:
+      - name: Download distributions
+        if: ${{ (matrix.repository == 'testpypi' && contains(github.ref_name, 'rc')) || (matrix.repository == 'pypi' && !contains(github.ref_name, 'rc')) }}
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.package_name }}-distributions
+          path: ${{ matrix.packages_dir }}
+
+      - name: Generate artifact attestation
+        if: ${{ (matrix.repository == 'testpypi' && contains(github.ref_name, 'rc')) || (matrix.repository == 'pypi' && !contains(github.ref_name, 'rc')) }}
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: ${{ matrix.packages_dir }}*
+
       - name: Publish to TestPyPI
-        if: contains(github.ref_name, 'rc')
+        if: ${{ matrix.repository == 'testpypi' && contains(github.ref_name, 'rc') }}
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          repository-url: https://test.pypi.org/legacy/
+          repository-url: ${{ matrix.repository_url }}
           packages-dir: ${{ matrix.packages_dir }}
 
       - name: Publish to PyPI
-        if: ${{ !contains(github.ref_name, 'rc') }}
+        if: ${{ matrix.repository == 'pypi' && !contains(github.ref_name, 'rc') }}
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: ${{ matrix.packages_dir }}
