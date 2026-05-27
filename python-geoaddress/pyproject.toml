@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "geoaddress"
-version = "1.0.0"
+version = "1.0.2"
 description = "Python library for address geocoding and reverse geocoding. Provides a unified interface to multiple geocoding providers (Nominatim, Google Maps, Mapbox, etc.) using ProviderKit for provider management."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
-license-files = ["../LICENSE"]
+license-files = ["LICENSE"]
 authors = [
   {name = "Octolo", email = "dev@octolo.tech"}
 ]
@@ -38,7 +38,7 @@ classifiers = [
 ]
 dependencies = [
   "clicommands>=0.1.0",
-  "providerkit>=0.1.0",
+  "providerkit>=1.1.2",
 ]
 
 [tool.setuptools]
@@ -52,3 +52,9 @@ Homepage = "https://github.com/octolo/python-geoaddress"
 Repository = "https://github.com/octolo/python-geoaddress"
 Documentation = "https://github.com/octolo/python-geoaddress/tree/main/python-geoaddress#readme"
 Issues = "https://github.com/octolo/python-geoaddress/issues"
+
+[project.optional-dependencies]
+test = [
+  "pytest>=8",
+  "python-dotenv",
+]
